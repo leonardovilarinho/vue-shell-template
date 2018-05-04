@@ -1,6 +1,6 @@
 <template>
   <main>
-    <h1>HomePage</h1>
+    <h1 v-text="$translate('title')"/>
   </main>
 </template>
 
@@ -8,6 +8,6 @@
 import './route'
 
 export default {
-  name: 'HomePage'
+  name: 'HomePage',
 }
 </script>

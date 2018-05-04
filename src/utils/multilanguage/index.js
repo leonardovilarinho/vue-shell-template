@@ -8,6 +8,6 @@ import * as frommodules from '../../modules/**/translate.js'
 const languages = transform(frompages, fromcommons, frommodules)
 
 Vue.use(VueMultilanguage, {
-  ...languages,
-  default: process.env.VUE_APP_LANG || 'en'
+  default: process.env.VUE_APP_LANG || 'en',
+  ...languages
 })
