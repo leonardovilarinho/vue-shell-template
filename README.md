@@ -3,10 +3,16 @@
 > Template for large app with Vue.js
 
 This repo is a project with custom organization, with goal of should be simple and fast.
+**Only Unix based**
 
 ## Installation
 
-Run commands:
+For global installation:
+```bash
+wget https://raw.githubusercontent.com/leonardovilarinho/vue-shell-template/master/vshell; chmod +x vshell; sudo mv vshell /usr/local/bin/vshell
+```
+
+For local installation:
 ```bash
 git clone https://github.com/leonardovilarinho/vue-shell-template <project-name>
 cd <project-name>; yarn

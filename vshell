@@ -255,5 +255,5 @@ if [ $1 == "i" ]; then
   git clone https://github.com/leonardovilarinho/vue-shell-template $2
   cd $2; yarn
   success "project '$2' has created"
-  yarn serve
+  exit
 fi
