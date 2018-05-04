@@ -9,7 +9,7 @@ re=$(tput bold)$(tput setaf 1)
 
 echo -e "\n"
 echo -e "\t${gr}\\${bl}\\  /${gr}/"
-echo -e "\t ${gr}\\${bl}\\/${gr}/  ${b}template shell 1.0.0"
+echo -e "\t ${gr}\\${bl}\\/${gr}/  ${b}template shell 1.0.2"
 echo -e "\t  ${gr}\\/${bl}"
 echo -e "\t\t\t${b}By${n} Leonardo Vilarinho"
 echo -e "\n"
@@ -17,12 +17,26 @@ echo -e "\n"
 if [ $# -eq 0 ]; then
   echo "List of commands:"
   echo "${ye}  -> ${b}vshell i <name>${n}           create new project"
+  echo "${ye}  -> ${b}vshell r${n}                  force reload project"
   echo "${ye}  -> ${b}vshell m <name>${n}           create new module"
   echo "${ye}  -> ${b}vshell p <name>${n}           create new page"
   echo "${ye}  -> ${b}vshell b <page> <name>${n}    create new page block"
   echo "${ye}  -> ${b}vshell s <page> <name>${n}    create new sub page"
   echo "${ye}  -> ${b}vshell c <folder> <name>${n}  create new common block"
   echo "${ye}  -> ${b}vshell u <name>${n}           create new util unit"
+  exit
+fi
+
+updatefile() {
+  echo "" >> $1
+  sed -i '$ d' $1
+}
+
+if [ $1 == "r" ]; then
+  echo "  ${b}SUC ${gr}reloading..."
+  updatefile "$PWD/src/utils/store/modules.js"
+  updatefile "$PWD/src/utils/router/index.js"
+  updatefile "$PWD/src/utils/plugins/translate/index.js"
   exit
 fi
 
@@ -60,11 +74,6 @@ if [ $1 == "b" ] || [ $1 == "s" ]; then
     exit
   fi
 fi
-
-updatefile() {
-  echo "" >> $1
-  sed -i '$ d' $1
-}
 
 capitalize() {
   name=$1
