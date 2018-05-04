@@ -9,7 +9,7 @@ This repo is a project with custom organization, with goal of should be simple a
 
 For global installation:
 ```bash
-wget https://raw.githubusercontent.com/leonardovilarinho/vue-shell-template/master/vshell; chmod +x vshell; sudo mv vshell /usr/local/bin/vshell
+wget https://raw.githubusercontent.com/leonardovilarinho/vue-shell-template/master/vshell --no-cache; chmod +x vshell; sudo mv vshell /usr/local/bin/vshell
 ```
 
 For local installation:
