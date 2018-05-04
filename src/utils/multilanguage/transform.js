@@ -6,8 +6,9 @@ const dispatch = (langs, object, type) => {
       if (!(lang in langs)) {
         langs[lang] = {
           pages: {},
+          subpages: {},
           commons: {},
-          modules: {}
+          blocks: {}
         }
       }
       langs[lang][type][item] = itemobj[lang]
@@ -16,10 +17,31 @@ const dispatch = (langs, object, type) => {
   return langs
 }
 
-export default (pages, commons, modules) => {
+export default (pagesAll, commons) => {
   let langs = {}
+  let pages = {}
+  let blocks = {}
+  let subpages = {}
+
+  for (let item in pagesAll) {
+    const pageObj = pagesAll[item]
+
+    if (!item.includes('$')) {
+      pages[item] = pageObj
+    } else {
+      const name = item.split('$').slice(-1)[0]
+
+      if (item.includes('$subpages') && name !== 'subpages') {
+        subpages[name] = pageObj
+      } else if (item.includes('$blocks') && name !== 'blocks') {
+        blocks[name] = pageObj
+      }
+    }
+  }
+
   langs = dispatch(langs, pages, 'pages')
+  langs = dispatch(langs, subpages, 'subpages')
+  langs = dispatch(langs, blocks, 'blocks')
   langs = dispatch(langs, commons, 'commons')
-  langs = dispatch(langs, modules, 'modules')
   return langs
 }

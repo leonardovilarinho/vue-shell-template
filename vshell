@@ -49,7 +49,7 @@ declare -A commandpaths
 
 commandpaths["m"]="${PWD}/src/modules/$2"
 commandpaths["p"]="${PWD}/src/pages/$2"
-commandpaths["b"]="${PWD}/src/pages/$2/blocks"
+commandpaths["b"]="${PWD}/src/pages/$2/blocks/$3"
 commandpaths["s"]="${PWD}/src/pages/$2/subpages/$3"
 commandpaths["c"]="${PWD}/src/commons/$2"
 commandpaths["u"]="${PWD}/src/utils/$2"
@@ -150,6 +150,11 @@ createroute() {
   updatefile "$PWD/src/utils/router/index.js"
 }
 
+createtranslate() {
+  createexport "$1/translate.js"
+  updatefile "$PWD/src/utils/plugins/translate/index.js"
+}
+
 createpage() {
   capitalized=$( capitalize $2 )
   filename="$1/${capitalized}Page.vue"
@@ -162,7 +167,7 @@ createpage() {
   mkdir -p "$1"
   createcomponent "${filename}" "${capitalized}Page" "true"  
   createroute $1 $2 $2 $2
-
+  createtranslate $1
 }
 
 if [ $1 == "p" ]; then
@@ -182,6 +187,7 @@ createblock() {
 
   mkdir -p "$1"
   createcomponent "${filename}" "${capitalized}Block"
+  createtranslate $1
 }
 
 if [ $1 == "b" ]; then
@@ -202,6 +208,7 @@ createsubpage() {
   mkdir -p "$1"
   createcomponent "${filename}" "${capitalized}SubPage" "true"
   createroute $1 "$2Sub" "$3/$2" $2
+  createtranslate $1
 }
 
 if [ $1 == "s" ]; then
@@ -221,6 +228,7 @@ createcommon() {
 
   mkdir -p "$1"
   createcomponent "${filename}" "${capitalized}Common"
+  createtranslate $1
 }
 
 if [ $1 == "c" ]; then
@@ -253,7 +261,7 @@ if [ $1 == "i" ]; then
     exit
   fi
   git clone https://github.com/leonardovilarinho/vue-shell-template $2
-  cd $2; yarn
+  cd $2; rm -rf .git; yarn
   success "project '$2' has created"
   exit
 fi
