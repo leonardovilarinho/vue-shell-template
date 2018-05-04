@@ -16,6 +16,7 @@ echo -e "\n"
 
 if [ $# -eq 0 ]; then
   echo "List of commands:"
+  echo "${ye}  -> ${b}vshell i <name>${n}           create new project"
   echo "${ye}  -> ${b}vshell m <name>${n}           create new module"
   echo "${ye}  -> ${b}vshell p <name>${n}           create new page"
   echo "${ye}  -> ${b}vshell b <page> <name>${n}    create new page block"
@@ -30,7 +31,7 @@ if [ $# -eq 1 ]; then
   exit
 fi
 
-commands=("m" "p" "b" "s" "c" "u")
+commands=("m" "p" "b" "s" "c" "u" "i")
 if [ $# -ge 2 ]; then
   if ! [[ ${commands[*]} =~ $1 ]]; then
     echo "  ${b}ERR ${re}'$1' is not valid command."
@@ -246,3 +247,13 @@ if [ $1 == "u" ]; then
   exit
 fi
 
+if [ $1 == "i" ]; then
+  if [ -d "$PWD/$2" ]; then
+    echo "  ${b}ERR ${re}project '$2' already."
+    exit
+  fi
+  git clone https://github.com/leonardovilarinho/vue-shell-template $2
+  cd $2; yarn
+  success "project '$2' has created"
+  yarn serve
+fi
