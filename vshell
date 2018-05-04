@@ -1,0 +1,228 @@
+#!/bin/bash
+
+b=$(tput bold)$(tput setaf 7)
+n=$(tput sgr0)$(tput setaf 7)
+ye=$(tput setaf 3)$(tput bold)
+gr=$(tput bold)$(tput setaf 2)
+bl=$(tput bold)$(tput setaf 4)
+re=$(tput bold)$(tput setaf 1)
+
+echo -e "\n"
+echo -e "\t${gr}\\${bl}\\  /${gr}/"
+echo -e "\t ${gr}\\${bl}\\/${gr}/  ${b}template shell 1.0.0"
+echo -e "\t  ${gr}\\/${bl}"
+echo -e "\t\t\t${b}By${n} Leonardo Vilarinho"
+echo -e "\n"
+
+if [ $# -eq 0 ]; then
+  echo "List of commands:"
+  echo "${ye}  -> ${b}vshell m <name>${n}           create new module"
+  echo "${ye}  -> ${b}vshell p <name>${n}           create new page"
+  echo "${ye}  -> ${b}vshell b <page> <name>${n}    create new page block"
+  echo "${ye}  -> ${b}vshell s <page> <name>${n}    create new sub page"
+  echo "${ye}  -> ${b}vshell c <folder> <name>${n}  create new common block"
+  echo "${ye}  -> ${b}vshell u <name>${n}           create new util unit"
+  exit
+fi
+
+if [ $# -eq 1 ]; then
+  echo "  ${b}ERR ${re}your command should has 1 or more arguments."
+  exit
+fi
+
+commands=("m" "p" "b" "s" "c" "u")
+if [ $# -ge 2 ]; then
+  if ! [[ ${commands[*]} =~ $1 ]]; then
+    echo "  ${b}ERR ${re}'$1' is not valid command."
+    exit
+  fi
+fi
+
+commands3args=("b" "s", "c")
+if [ $# -eq 2 ] && [[ ${commands3args[*]} =~ $1 ]]; then
+  echo "  ${b}ERR ${re}'$1' not accept only 2 arguments."
+  exit
+fi
+
+declare -A commandpaths
+
+commandpaths["m"]="${PWD}/src/modules/$2"
+commandpaths["p"]="${PWD}/src/pages/$2"
+commandpaths["b"]="${PWD}/src/pages/$2/blocks"
+commandpaths["s"]="${PWD}/src/pages/$2/subpages/$3"
+commandpaths["c"]="${PWD}/src/commons/$2"
+commandpaths["u"]="${PWD}/src/utils/$2"
+
+if [ $1 == "b" ] || [ $1 == "s" ]; then
+  if [ ! -d ${commandpaths["p"]} ]; then
+    echo "  ${b}ERR ${re}page '$2' not found."
+    exit
+  fi
+fi
+
+capitalize() {
+  name=$1
+  echo "$(tr '[:lower:]' '[:upper:]' <<< ${name:0:1})${name:1}"
+}
+
+createexport() {
+  if [ $# -ge 2 ]; then
+    printf "import http from '@/utils/http'\n\n" >> "$1"  
+  fi
+  printf "export default {\n" >> "$1"
+  printf "\n}\n" >> "$1"
+}
+
+createmodule() {
+  if [ -d $1 ]; then
+    echo "  ${b}ERR ${re}module '$1' already."
+    exit
+  fi
+
+  mkdir -p "$1/store"
+
+  printf "import state from './state'\n" >> "$1/store/index.js"
+  printf "import getters from './getters'\n" >> "$1/store/index.js"
+  printf "import mutations from './mutations'\n" >> "$1/store/index.js"
+  printf "import actions from './actions'\n\n" >> "$1/store/index.js"
+  printf "export default {\n" >> "$1/store/index.js"
+  printf "  namespaced: true,\n" >> "$1/store/index.js"
+  printf "  state,\n" >> "$1/store/index.js"
+  printf "  getters,\n" >> "$1/store/index.js"
+  printf "  mutations,\n" >> "$1/store/index.js"
+  printf "  actions\n" >> "$1/store/index.js"
+  printf "}\n" >> "$1/store/index.js"
+
+  createexport "$1/store/state.js"
+  createexport "$1/store/getters.js"
+  createexport "$1/store/mutations.js"
+  createexport "$1/store/actions.js" "true"
+}
+
+if [ $1 == "m" ]; then
+  createmodule ${commandpaths["m"]}
+  exit
+fi
+
+createcomponent() {
+  printf "<template>\n" >> "$1"
+  printf "  <p>$2<p>\n" >> "$1"
+  printf "</template>\n" >> "$1"
+  printf "\n<script>\n" >> "$1"
+
+  if [ $# -ge 3 ]; then
+    printf "import './route'\n\n" >> "$1"
+  fi
+  
+  printf "export default {\n" >> "$1"
+  printf "  name: '$2'\n" >> "$1"
+  printf "}\n</script>\n" >> "$1"
+}
+
+createroute() {
+  capitalized=$( capitalize $2 )
+  capitalized2=$( capitalize $4 )
+
+  printf "import ${capitalized}Page from './${capitalized}Page'\n\n" >> "$1/route.js"  
+  printf "export default {\n" >> "$1/route.js"  
+  printf "  path: '/$3',\n" >> "$1/route.js"  
+  printf "  name: '$4',\n" >> "$1/route.js"  
+  printf "  component: ${capitalized}Page,\n" >> "$1/route.js"  
+  printf "  meta: {\n" >> "$1/route.js"  
+  printf "    title: '${capitalized2}'\n" >> "$1/route.js"  
+  printf "  }\n" >> "$1/route.js"  
+  printf "}\n" >> "$1/route.js"  
+}
+
+createpage() {
+  capitalized=$( capitalize $2 )
+  filename="$1/${capitalized}Page.vue"
+
+  if [ -d $1 ]; then
+    echo "  ${b}ERR ${re}page '${capitalized}' already."
+    exit
+  fi
+
+  mkdir -p "$1"
+  createcomponent "${filename}" "${capitalized}Page" "true"  
+  createroute $1 $2 $2 $2
+
+}
+
+if [ $1 == "p" ]; then
+  createpage ${commandpaths["p"]} $2
+  exit
+fi
+
+createblock() {
+  capitalized=$( capitalize $2 )
+  filename="$1/${capitalized}Block.vue"
+
+  if [ -f "${filename}" ]; then
+    echo "  ${b}ERR ${re}block '${capitalized}' already."
+    exit
+  fi
+
+  mkdir -p "$1"
+  createcomponent "${filename}" "${capitalized}Block"
+}
+
+if [ $1 == "b" ]; then
+  createblock ${commandpaths["b"]} $3
+  exit
+fi
+
+createsubpage() {
+  capitalized=$( capitalize $2 )
+  filename="$1/${capitalized}SubPage.vue"
+
+  if [ -f "${filename}" ]; then
+    echo "  ${b}ERR ${re}subpage '${capitalized}' already."
+    exit
+  fi
+
+  mkdir -p "$1"
+  createcomponent "${filename}" "${capitalized}SubPage" "true"
+  createroute $1 "$2Sub" "$3/$2" $2
+}
+
+if [ $1 == "s" ]; then
+  createsubpage ${commandpaths["s"]} $3 $2
+  exit
+fi
+
+createcommon() {
+  capitalized=$( capitalize $2 )
+  filename="$1/${capitalized}Common.vue"
+
+  if [ -f "${filename}" ]; then
+    echo "  ${b}ERR ${re}common '${capitalized}' already."
+    exit
+  fi
+
+  mkdir -p "$1"
+  createcomponent "${filename}" "${capitalized}Common"
+}
+
+if [ $1 == "c" ]; then
+  createcommon ${commandpaths["c"]} $3
+  exit
+fi
+
+createutil() {
+  filename="$1/index.js"
+
+  if [ -f "${filename}" ]; then
+    echo "  ${b}ERR ${re}util '$2' already."
+    exit
+  fi
+
+  mkdir -p "$1"
+  createexport "${filename}"
+}
+
+if [ $1 == "u" ]; then
+  createutil ${commandpaths["u"]} $2
+  exit
+fi
+
