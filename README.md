@@ -4,6 +4,14 @@
 
 This repo is a project with custom organization, with goal of should be simple and fast.
 
+## Installation
+
+Run commands:
+```bash
+git clone https://github.com/leonardovilarinho/vue-shell-template <project-name>
+cd <project-name>; yarn
+```
+
 ## Shell commands
 ```bash
 # create new page
