@@ -60,6 +60,10 @@ if [ $1 == "b" ] || [ $1 == "s" ]; then
   fi
 fi
 
+updatefile() {
+  echo "" >> $1
+  sed -i '$ d' $1
+}
 capitalize() {
   name=$1
   echo "$(tr '[:lower:]' '[:upper:]' <<< ${name:0:1})${name:1}"
@@ -97,6 +101,8 @@ createmodule() {
   createexport "$1/store/getters.js"
   createexport "$1/store/mutations.js"
   createexport "$1/store/actions.js" "true"
+
+  updatefile "$PWD/utils/store/modules.js"
 }
 
 if [ $1 == "m" ]; then
@@ -106,7 +112,7 @@ fi
 
 createcomponent() {
   printf "<template>\n" >> "$1"
-  printf "  <p>$2<p>\n" >> "$1"
+  printf "  <p>$2</p>\n" >> "$1"
   printf "</template>\n" >> "$1"
   printf "\n<script>\n" >> "$1"
 
@@ -132,6 +138,8 @@ createroute() {
   printf "    title: '${capitalized2}'\n" >> "$1/route.js"  
   printf "  }\n" >> "$1/route.js"  
   printf "}\n" >> "$1/route.js"  
+
+  updatefile "$PWD/src/utils/router/index.js"
 }
 
 createpage() {
