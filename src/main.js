@@ -3,6 +3,7 @@ import App from '@/App.vue'
 import router from '@/utils/router'
 import store from '@/utils/store'
 import '@/utils/plugins/worker'
+import '@/utils/multilanguage'
 
 Vue.config.productionTip = false
 
