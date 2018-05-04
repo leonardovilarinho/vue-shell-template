@@ -9,7 +9,7 @@ re=$(tput bold)$(tput setaf 1)
 
 echo -e "\n"
 echo -e "\t${gr}\\${bl}\\  /${gr}/"
-echo -e "\t ${gr}\\${bl}\\/${gr}/  ${b}template shell 1.0.3"
+echo -e "\t ${gr}\\${bl}\\/${gr}/  ${b}template shell 1.0.5"
 echo -e "\t  ${gr}\\/${bl}"
 echo -e "\t\t\t${b}By${n} Leonardo Vilarinho"
 echo -e "\n"
@@ -85,6 +85,10 @@ success() {
   exit
 }
 
+replace() {
+  echo "${1/$2/$3}"
+}
+
 createexport() {
   if [ $# -ge 2 ]; then
     printf "import http from '@/utils/http'\n\n" >> "$1"  
@@ -93,13 +97,51 @@ createexport() {
   printf "\n}\n" >> "$1"
 }
 
+createtranslate() {
+  createexport "$1/translate.js"
+  updatefile "$PWD/src/utils/plugins/translate/index.js"
+}
+
+createcomponent() {
+  printf "<template>\n" >> "$1"
+  printf "  <p>$2</p>\n" >> "$1"
+  printf "</template>\n" >> "$1"
+  printf "\n<script>\n" >> "$1"
+  name=$2
+
+  if [ $3 == "true" ]; then
+    printf "import './route'\n\n" >> "$1"
+  fi
+
+  if [ $4 == "true" ]; then
+    name=$(replace "$2" "Module" "")
+    printf "import { createNamespacedHelpers } from 'vuex'\n" >> "$1"
+    printf "const { mapActions, mapGetters } = createNamespacedHelpers('${name}')\n\n" >> "$1"
+  fi
+
+  printf "export default {\n" >> "$1"
+  printf "  name: '$2'" >> "$1"
+  if [ $4 == "true" ]; then
+    printf ",\n  computed: {\n" >> "$1"
+    printf "    ...mapGetters([])\n" >> "$1"
+    printf "  },\n  methods: {\n" >> "$1"
+    printf "    ...mapActions([])\n  }" >> "$1"
+  fi
+  printf "\n}\n</script>\n" >> "$1"
+}
+
 createmodule() {
+  capitalized=$( capitalize $2 )
+  filename="$1/${capitalized}Module.vue"
+
   if [ -d $1 ]; then
-    echo "  ${b}ERR ${re}module '$1' already."
+    echo "  ${b}ERR ${re}module '$2' already."
     exit
   fi
 
   mkdir -p "$1/store"
+
+  createcomponent "${filename}" "${capitalized}Module" "false" "true"
 
   printf "import state from './state'\n" >> "$1/store/index.js"
   printf "import getters from './getters'\n" >> "$1/store/index.js"
@@ -117,30 +159,16 @@ createmodule() {
   createexport "$1/store/getters.js"
   createexport "$1/store/mutations.js"
   createexport "$1/store/actions.js" "true"
-
+  
+  createtranslate $1
   updatefile "$PWD/src/utils/store/modules.js"
 }
 
 if [ $1 == "m" ]; then
-  createmodule ${commandpaths["m"]}
+  createmodule ${commandpaths["m"]} $2
   success "module '$2' has created"
   exit
 fi
-
-createcomponent() {
-  printf "<template>\n" >> "$1"
-  printf "  <p>$2</p>\n" >> "$1"
-  printf "</template>\n" >> "$1"
-  printf "\n<script>\n" >> "$1"
-
-  if [ $# -ge 3 ]; then
-    printf "import './route'\n\n" >> "$1"
-  fi
-  
-  printf "export default {\n" >> "$1"
-  printf "  name: '$2'\n" >> "$1"
-  printf "}\n</script>\n" >> "$1"
-}
 
 createroute() {
   capitalized=$( capitalize $2 )
@@ -159,11 +187,6 @@ createroute() {
   updatefile "$PWD/src/utils/router/index.js"
 }
 
-createtranslate() {
-  createexport "$1/translate.js"
-  updatefile "$PWD/src/utils/plugins/translate/index.js"
-}
-
 createpage() {
   capitalized=$( capitalize $2 )
   filename="$1/${capitalized}Page.vue"
@@ -174,7 +197,7 @@ createpage() {
   fi
 
   mkdir -p "$1"
-  createcomponent "${filename}" "${capitalized}Page" "true"  
+  createcomponent "${filename}" "${capitalized}Page" "true"
   createroute $1 $2 $2 $2
   createtranslate $1
 }

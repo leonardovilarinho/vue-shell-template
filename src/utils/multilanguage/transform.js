@@ -8,20 +8,23 @@ const dispatch = (langs, object, type) => {
           pages: {},
           subpages: {},
           commons: {},
-          blocks: {}
+          blocks: {},
+          modules: {}
         }
       }
+      item = item.toLowerCase()
       langs[lang][type][item] = itemobj[lang]
     }
   }
   return langs
 }
 
-export default (pagesAll, commons) => {
+export default (pagesAll, commonsAll, modules) => {
   let langs = {}
   let pages = {}
   let blocks = {}
   let subpages = {}
+  let commons = {}
 
   for (let item in pagesAll) {
     const pageObj = pagesAll[item]
@@ -39,9 +42,19 @@ export default (pagesAll, commons) => {
     }
   }
 
+  for (let item in commonsAll) {
+    const commonObj = commonsAll[item]
+
+    if (item.includes('$')) {
+      const name = item.split('$').slice(-1)[0]
+      commons[name] = commonObj
+    }
+  }
+
   langs = dispatch(langs, pages, 'pages')
   langs = dispatch(langs, subpages, 'subpages')
   langs = dispatch(langs, blocks, 'blocks')
   langs = dispatch(langs, commons, 'commons')
+  langs = dispatch(langs, modules, 'modules')
   return langs
 }
