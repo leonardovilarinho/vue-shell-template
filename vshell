@@ -9,7 +9,7 @@ re=$(tput bold)$(tput setaf 1)
 
 echo -e "\n"
 echo -e "\t${gr}\\${bl}\\  /${gr}/"
-echo -e "\t ${gr}\\${bl}\\/${gr}/  ${b}template shell 1.0.5"
+echo -e "\t ${gr}\\${bl}\\/${gr}/  ${b}template shell 1.0.6"
 echo -e "\t  ${gr}\\/${bl}"
 echo -e "\t\t\t${b}By${n} Leonardo Vilarinho"
 echo -e "\n"
@@ -37,6 +37,7 @@ if [ $1 == "r" ]; then
   updatefile "$PWD/src/utils/store/modules.js"
   updatefile "$PWD/src/utils/router/index.js"
   updatefile "$PWD/src/utils/plugins/translate/index.js"
+  updatefile "$PWD/src/utils/multilanguage/index.js"
   exit
 fi
 
@@ -80,6 +81,11 @@ capitalize() {
   echo "${name}" | sed -r 's/(^|-)([a-z])/\U\2/g'
 }
 
+clean() {
+  name=$1
+  echo "${name}" | sed -r 's/(^|-)([a-z])/\2/g'
+}
+
 success() {
   echo "  ${b}SUC ${gr}$1."
   exit
@@ -90,15 +96,19 @@ replace() {
 }
 
 createexport() {
-  if [ $# -ge 2 ]; then
+  if [ $2 == "actions" ]; then
     printf "import http from '@/utils/http'\n\n" >> "$1"  
   fi
   printf "export default {\n" >> "$1"
+  if [ $2 == "lang" ]; then
+    printf "  en: {\n\n  },\n\n" >> "$1"  
+    printf "  pt: {\n\n  }" >> "$1"  
+  fi
   printf "\n}\n" >> "$1"
 }
 
 createtranslate() {
-  createexport "$1/translate.js"
+  createexport "$1/translate.js" "lang"
   updatefile "$PWD/src/utils/plugins/translate/index.js"
 }
 
@@ -118,9 +128,10 @@ createcomponent() {
     printf "import { createNamespacedHelpers } from 'vuex'\n" >> "$1"
     printf "const { mapActions, mapGetters } = createNamespacedHelpers('${name}')\n\n" >> "$1"
   fi
-
+  uriname=$(clean $5)
   printf "export default {\n" >> "$1"
-  printf "  name: '$2'" >> "$1"
+  printf "  name: '$2',\n" >> "$1"
+  printf "  uri: '${uriname}'" >> "$1"
   if [ $4 == "true" ]; then
     printf ",\n  computed: {\n" >> "$1"
     printf "    ...mapGetters([])\n" >> "$1"
@@ -141,7 +152,7 @@ createmodule() {
 
   mkdir -p "$1/store"
 
-  createcomponent "${filename}" "${capitalized}Module" "false" "true"
+  createcomponent "${filename}" "${capitalized}Module" "false" "true" $2
 
   printf "import state from './state'\n" >> "$1/store/index.js"
   printf "import getters from './getters'\n" >> "$1/store/index.js"
@@ -155,10 +166,10 @@ createmodule() {
   printf "  actions\n" >> "$1/store/index.js"
   printf "}\n" >> "$1/store/index.js"
 
-  createexport "$1/store/state.js"
-  createexport "$1/store/getters.js"
-  createexport "$1/store/mutations.js"
-  createexport "$1/store/actions.js" "true"
+  createexport "$1/store/state.js" "false"
+  createexport "$1/store/getters.js" "false"
+  createexport "$1/store/mutations.js" "false"
+  createexport "$1/store/actions.js" "actions"
   
   createtranslate $1
   updatefile "$PWD/src/utils/store/modules.js"
@@ -197,7 +208,7 @@ createpage() {
   fi
 
   mkdir -p "$1"
-  createcomponent "${filename}" "${capitalized}Page" "true"
+  createcomponent "${filename}" "${capitalized}Page" "true" "false" $2
   createroute $1 $2 $2 $2
   createtranslate $1
 }
@@ -218,7 +229,7 @@ createblock() {
   fi
 
   mkdir -p "$1"
-  createcomponent "${filename}" "${capitalized}Block"
+  createcomponent "${filename}" "${capitalized}Block" "false" "false" $2
   createtranslate $1
 }
 
@@ -238,7 +249,7 @@ createsubpage() {
   fi
 
   mkdir -p "$1"
-  createcomponent "${filename}" "${capitalized}SubPage" "true"
+  createcomponent "${filename}" "${capitalized}SubPage" "true" "false" $2
   createroute $1 "$2Sub" "$3/$2" $2
   createtranslate $1
 }
@@ -259,7 +270,7 @@ createcommon() {
   fi
 
   mkdir -p "$1"
-  createcomponent "${filename}" "${capitalized}Common"
+  createcomponent "${filename}" "${capitalized}Common" "false" "false" $2
   createtranslate $1
 }
 
@@ -278,7 +289,7 @@ createutil() {
   fi
 
   mkdir -p "$1"
-  createexport "${filename}"
+  createexport "${filename}" "false"
 }
 
 if [ $1 == "u" ]; then

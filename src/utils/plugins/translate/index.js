@@ -16,8 +16,9 @@ const t = new class Translate {
         $translate(name, value = '') {
           const compName = this.$options.name
           const type = _class.getType(compName)
-          const instance = compName.toLowerCase().replace(type.replace('s', ''), '')
-          return this.translate(`${type}.${instance}.${name}`, value)
+          name = `${type}.${this.$options.uri}.${name}`
+          if (value !== '') return this.translate(name, value)
+          return this.translate(name)
         }
       }
     })
