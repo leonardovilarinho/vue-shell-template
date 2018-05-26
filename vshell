@@ -1,7 +1,7 @@
 #!/bin/bash
 
-b=$(tput bold)$(tput init)
-n=$(tput sgr0)$(tput init)
+b=$(tput bold)$(tput setaf 0)
+n=$(tput sgr0)$(tput setaf 0)
 ye=$(tput setaf 3)$(tput bold)
 gr=$(tput bold)$(tput setaf 2)
 bl=$(tput bold)$(tput setaf 4)
@@ -9,7 +9,7 @@ re=$(tput bold)$(tput setaf 1)
 
 echo -e "\n"
 echo -e "\t${gr}\\${bl}\\  /${gr}/"
-echo -e "\t ${gr}\\${bl}\\/${gr}/  ${b}template shell 1.0.6"
+echo -e "\t ${gr}\\${bl}\\/${gr}/  ${b}template shell 1.0.7"
 echo -e "\t  ${gr}\\/${bl}"
 echo -e "\t\t\t${b}By${n} Leonardo Vilarinho"
 echo -e "\n"
@@ -36,7 +36,6 @@ if [ $1 == "r" ]; then
   echo "  ${b}SUC ${gr}reloading..."
   updatefile "$PWD/src/utils/store/modules.js"
   updatefile "$PWD/src/utils/router/index.js"
-  updatefile "$PWD/src/utils/plugins/translate/index.js"
   updatefile "$PWD/src/utils/multilanguage/index.js"
   exit
 fi
@@ -109,7 +108,7 @@ createexport() {
 
 createtranslate() {
   createexport "$1/translate.js" "lang"
-  updatefile "$PWD/src/utils/plugins/translate/index.js"
+  updatefile "$PWD/src/utils/multilanguage/index.js"
 }
 
 createcomponent() {
@@ -229,12 +228,12 @@ createblock() {
   fi
 
   mkdir -p "$1"
-  createcomponent "${filename}" "${capitalized}Block" "false" "false" $2
+  createcomponent "${filename}" "${capitalized}Block" "false" "false" "$3blocks$2"
   createtranslate $1
 }
 
 if [ $1 == "b" ]; then
-  createblock ${commandpaths["b"]} $3
+  createblock ${commandpaths["b"]} $3 $2
   success "block '$2/$3' has created"
   exit
 fi
@@ -249,7 +248,7 @@ createsubpage() {
   fi
 
   mkdir -p "$1"
-  createcomponent "${filename}" "${capitalized}SubPage" "true" "false" $2
+  createcomponent "${filename}" "${capitalized}SubPage" "true" "false" "$3subpages$2"
   createroute $1 "$2Sub" "$3/$2" $2
   createtranslate $1
 }
@@ -270,12 +269,12 @@ createcommon() {
   fi
 
   mkdir -p "$1"
-  createcomponent "${filename}" "${capitalized}Common" "false" "false" $2
+  createcomponent "${filename}" "${capitalized}Common" "false" "false" "$3$2"
   createtranslate $1
 }
 
 if [ $1 == "c" ]; then
-  createcommon ${commandpaths["c"]} $3
+  createcommon ${commandpaths["c"]} $3 $2
   success "common '$2/$3' has created"
   exit
 fi

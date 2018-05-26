@@ -1,6 +1,6 @@
 <template>
   <main>
-    <h1 v-text="$translate('title')"/>
+    <h1 v-text="$ml.get('title')"/>
   </main>
 </template>
 
@@ -9,5 +9,6 @@ import './route'
 
 export default {
   name: 'HomePage',
+  uri: 'home'
 }
 </script>
